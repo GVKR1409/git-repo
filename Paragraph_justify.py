@@ -1,10 +1,10 @@
-def justify_paragraph(paragraph, page_width):
+def justify_paragraph(paragraph, paragraph_width):
     words = paragraph.split()
     lines = []
     current_line = []
 
     for word in words:
-        if len(' '.join(current_line + [word])) <= page_width:
+        if len(' '.join(current_line + [word])) <= paragraph_width:
             current_line.append(word)
         else:
             lines.append(current_line)
@@ -15,7 +15,7 @@ def justify_paragraph(paragraph, page_width):
 
     justified_lines = []
     for line in lines:
-        spaces_to_add = page_width - sum(len(word) for word in line)
+        spaces_to_add = paragraph_width - sum(len(word) for word in line)
         num_gaps = len(line) - 1
         if num_gaps > 0:
             spaces_per_gap = spaces_to_add // num_gaps
@@ -35,8 +35,8 @@ def justify_paragraph(paragraph, page_width):
     return justified_lines
 
 # Sample input
-paragraph = "This is a sample text but a complicated problem to be solved, so we are adding more text to see that it actually works."
-page_width = 20
+paragraph = input("Enter paragraph data ")
+paragraph_width = int(input("enter paragraph width"))
 
 # Output
-print(justify_paragraph(paragraph, page_width))
+print(justify_paragraph(paragraph, paragraph_width))
