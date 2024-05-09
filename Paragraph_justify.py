@@ -1,21 +1,40 @@
+def calculateSumOfLineWidth(line=[]):
+    sum_Width=0 
+    for word in line:
+        sum_Width+=len(word)
+    print("calculating sum of width of passed line",sum_Width)
+    return sum_Width
+
 def justify_paragraph(paragraph, paragraph_width):
     words = paragraph.split()
+    #print(words)
     lines = []
     current_line = []
+    
+    count=0
 
     for word in words:
+        count+=1
+        print("for loop iteration count",count)
         if len(' '.join(current_line + [word])) <= paragraph_width:
             current_line.append(word)
+            print("if condition",current_line)
         else:
+            #used to append the current_line to lines because it is already satisfied with width matching to paragraph_width 
             lines.append(current_line)
+            print("appended lines are",lines)
             current_line = [word]
-    
+            print("else condition",current_line)
+        ++count
+    #for adding last current_line into lines if its not added
     if current_line:
         lines.append(current_line)
 
     justified_lines = []
     for line in lines:
-        spaces_to_add = paragraph_width - sum(len(word) for word in line)
+        #number of spaces_to_add in between words to match paragraph_width
+        spaces_to_add = paragraph_width - calculateSumOfLineWidth(line)
+        #spaces_to_add = paragraph_width - sum(len(word) for word in line)
         num_gaps = len(line) - 1
         if num_gaps > 0:
             spaces_per_gap = spaces_to_add // num_gaps
@@ -39,4 +58,8 @@ paragraph = input("Enter paragraph data ")
 paragraph_width = int(input("enter paragraph width"))
 
 # Output
-print(justify_paragraph(paragraph, paragraph_width))
+my_final_list=justify_paragraph(paragraph, paragraph_width)
+print(my_final_list)
+for i in range(len(my_final_list)):
+    print("Array ["+str(i+1)+"] = \""+my_final_list[i]+"\"")
+    
