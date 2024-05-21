@@ -1,0 +1,17 @@
+**DevOps Engineer**
+ABC Tech Solutions, New York, NY
+June 2019 - Present
+
+- **User and Group Management**:
+  - Automated user provisioning and deprovisioning using Ansible and Terraform, reducing onboarding time by 50%.
+  - Implemented role-based access control (RBAC) across all environments, improving security and compliance.
+  - Conducted regular security audits of user accounts and permissions, reducing unauthorized access incidents by 30%.
+  - Integrated LDAP/Active Directory for centralized authentication, streamlining user management.
+  - Managed SSH keys and implemented key rotation policies, enhancing secure server access.
+  - Deployed multi-factor authentication (MFA) to strengthen user login security.
+  - Documented user management procedures and provided training to team members on best practices.
+
+- **Achievements**:
+  - Successfully migrated user management to a centralized system, improving consistency and efficiency.
+  - Improved overall system security by implementing comprehensive access control policies and regular audits.
+  - Collaborated with cross-functional teams to define and enforce user roles and access levels, ensuring appropriate access for all users.
