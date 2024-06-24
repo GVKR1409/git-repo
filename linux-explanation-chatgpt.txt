@@ -90,6 +90,146 @@ Processing file2.txt
 
 In the first part, `file` is only set to `file1.txt`, and it doesn't iterate over `file2.txt` because `$files` was expanded prematurely. In the second part, `file` correctly iterates over both `file1.txt` and `file2.txt` because `eval` handles the variable expansion properly.
 
+
+############################################################################
+
+
+To print multiple same characters in a single line using a shell script, you can use various methods, including a loop, the `printf` command, or utilities like `yes` or `seq` combined with `tr`. Here are some examples:
+
+### Method 1: Using a Loop
+
+This method uses a loop to print a specified number of characters.
+
+```sh
+#!/bin/bash
+
+char="*"
+count=10
+
+for ((i = 1; i <= count; i++)); do
+    echo -n "$char"
+done
+echo
+```
+
+### Method 2: Using `printf`
+
+The `printf` command is versatile and can be used to repeat a character multiple times.
+
+```sh
+#!/bin/bash
+
+char="*"
+count=10
+
+printf "%${count}s" | tr ' ' "$char"
+echo
+```
+
+### Method 3: Using `yes` and `head`
+
+The `yes` command outputs a string repeatedly until killed. This output can be limited with `head`.
+
+```sh
+#!/bin/bash
+
+char="*"
+count=10
+
+yes "$char" | head -n "$count" | tr -d '\n'
+echo
+```
+
+### Method 4: Using `seq` and `tr`
+
+You can use `seq` to generate a sequence and `tr` to transform it into repeated characters.
+
+```sh
+#!/bin/bash
+
+char="*"
+count=10
+
+seq -s "$char" $count | tr -d '[:digit:]'
+echo
+```
+
+### Method 5: Using `awk`
+
+`awk` is another powerful text processing utility that can be used to repeat characters.
+
+```sh
+#!/bin/bash
+
+char="*"
+count=10
+
+awk -v char="$char" -v count="$count" 'BEGIN {for (i = 1; i <= count; i++) printf "%s", char} END {print ""}'
+```
+
+### Example Shell Script
+
+Here's a complete example script that demonstrates all the methods mentioned:
+
+```sh
+#!/bin/bash
+
+char="*"
+count=10
+
+# Method 1: Using a Loop
+echo -n "Method 1: "
+for ((i = 1; i <= count; i++)); do
+    echo -n "$char"
+done
+echo
+
+# Method 2: Using printf
+echo -n "Method 2: "
+printf "%${count}s" | tr ' ' "$char"
+echo
+
+# Method 3: Using yes and head
+echo -n "Method 3: "
+yes "$char" | head -n "$count" | tr -d '\n'
+echo
+
+# Method 4: Using seq and tr
+echo -n "Method 4: "
+seq -s "$char" $count | tr -d '[:digit:]'
+echo
+
+# Method 5: Using awk
+echo -n "Method 5: "
+awk -v char="$char" -v count="$count" 'BEGIN {for (i = 1; i <= count; i++) printf "%s", char} END {print ""}'
+```
+
+### Running the Script
+
+Save the script to a file, for example, `repeat_char.sh`, and make it executable:
+
+```sh
+chmod +x repeat_char.sh
+```
+
+Then, run the script:
+
+```sh
+./repeat_char.sh
+```
+
+### Output
+
+The script will print the repeated character `*` 10 times for each method, each on a new line prefixed by the method number:
+
+```
+Method 1: **********
+Method 2: **********
+Method 3: **********
+Method 4: **********
+Method 5: **********
+```
+
 ### Summary
 
 Escaping the dollar sign ensures that `eval` can correctly interpret and expand the variables during the execution phase, allowing the command to work as intended.
