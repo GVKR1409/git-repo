@@ -1,0 +1,95 @@
+Eval Command examples
+
+The backslash (`\`) before the dollar sign (`$`) in the command `eval "for file in \$files; do echo Processing \$file; done"` is used to escape the dollar sign. This escaping is necessary to ensure that the variable `files` is not expanded by the shell before the `eval` command is executed. 
+
+Here's a detailed explanation:
+
+### Without Escaping the Dollar Sign
+
+If we write the command without escaping the dollar sign, like this:
+
+```sh
+eval "for file in $files; do echo Processing $file; done"
+```
+
+The shell will immediately expand `$files` before passing the command to `eval`. This means that if `files` contains `file1.txt file2.txt`, the command will become:
+
+```sh
+eval "for file in file1.txt file2.txt; do echo Processing file1.txt; done"
+```
+
+This will not work as intended because `eval` will execute the command with `file` containing only `file1.txt` and ignoring `file2.txt`.
+
+### With Escaping the Dollar Sign
+
+By escaping the dollar sign, like this:
+
+```sh
+eval "for file in \$files; do echo Processing \$file; done"
+```
+
+We ensure that `eval` receives the command as a single string without expanding `$files` initially. The `eval` command then processes the string, expanding the variables correctly at the time of execution.
+
+Here's the step-by-step breakdown:
+
+1. **Initial Command:**
+   ```sh
+   eval "for file in \$files; do echo Processing \$file; done"
+   ```
+
+2. **What `eval` Receives:**
+   ```sh
+   for file in $files; do echo Processing $file; done
+   ```
+
+3. **Execution by `eval`:**
+   - `eval` sees the variables `$files` and `$file` and expands them at the time of execution.
+   - If `files` contains `file1.txt file2.txt`, `eval` executes:
+     ```sh
+     for file in file1.txt file2.txt; do echo Processing $file; done
+     ```
+
+4. **Output:**
+   ```sh
+   Processing file1.txt
+   Processing file2.txt
+   ```
+
+### Example for Clarity
+
+Let's consider a full example to clarify this:
+
+#### Script Example
+
+```sh
+#!/bin/bash
+
+# Simulate a list of files
+files="file1.txt file2.txt"
+
+# Incorrect usage without escaping
+echo "Without escaping:"
+eval "for file in $files; do echo Processing $file; done"
+
+# Correct usage with escaping
+echo "With escaping:"
+eval "for file in \$files; do echo Processing \$file; done"
+```
+
+#### Expected Output
+
+```sh
+Without escaping:
+Processing file1.txt
+Processing file1.txt
+
+With escaping:
+Processing file1.txt
+Processing file2.txt
+```
+
+In the first part, `file` is only set to `file1.txt`, and it doesn't iterate over `file2.txt` because `$files` was expanded prematurely. In the second part, `file` correctly iterates over both `file1.txt` and `file2.txt` because `eval` handles the variable expansion properly.
+
+### Summary
+
+Escaping the dollar sign ensures that `eval` can correctly interpret and expand the variables during the execution phase, allowing the command to work as intended.
