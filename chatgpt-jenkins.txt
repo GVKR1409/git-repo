@@ -1,0 +1,73 @@
+To handle scenarios where the CR window open time could be significantly later (e.g., two days), you can use Jenkins's `build` step with a `waitUntil` block to more efficiently wait for the CR window to open, rather than relying on `sleep`.
+
+Here's an updated version of the Jenkins pipeline script to handle this:
+
+1. **Parent Job Definition:**
+   - Accept CR number and other inputs as parameters.
+   - Trigger the production job at the CR window open time, even if it's several days later.
+
+2. **Wait Until CR Window Opens:**
+   - Use `waitUntil` for efficiently waiting until the CR window opens without blocking Jenkins executors.
+
+### Full Pipeline Example
+
+```groovy
+pipeline {
+    agent any
+    parameters {
+        string(name: 'CR_NUMBER', defaultValue: '', description: 'Change Request Number')
+        string(name: 'OTHER_INPUT', defaultValue: '', description: 'Other input for the production job')
+    }
+    stages {
+        stage('Schedule Production Job') {
+            steps {
+                script {
+                    def crNumber = params.CR_NUMBER
+                    def otherInput = params.OTHER_INPUT
+                    def crWindowOpenTime = getCrWindowOpenTime()
+                    def currentTime = System.currentTimeMillis() / 1000
+
+                    if (currentTime >= crWindowOpenTime) {
+                        build job: 'Prod_Job', parameters: [
+                            string(name: 'CR_NUMBER', value: crNumber),
+                            string(name: 'OTHER_INPUT', value: otherInput)
+                        ]
+                    } else {
+                        // Efficiently wait until CR window open time
+                        waitUntil {
+                            currentTime = System.currentTimeMillis() / 1000
+                            return currentTime >= crWindowOpenTime
+                        }
+                        build job: 'Prod_Job', parameters: [
+                            string(name: 'CR_NUMBER', value: crNumber),
+                            string(name: 'OTHER_INPUT', value: otherInput)
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
+
+def getCrWindowOpenTime() {
+    // Replace this with actual logic to get CR window open time
+    // Example: return System.currentTimeMillis() / 1000 + 3600 * 48 // 2 days from now
+    return System.currentTimeMillis() / 1000 + 3600 * 48 // Example for 2 days from now
+}
+```
+
+### Explanation:
+
+1. **Parameters:**
+   - `CR_NUMBER` and `OTHER_INPUT` are defined as parameters in the parent job.
+
+2. **Scheduling the Job:**
+   - `getCrWindowOpenTime()` function returns the Unix timestamp for the CR window open time. Replace the mock implementation with the actual logic to fetch the CR window time.
+   - The script checks if the current time is greater than or equal to the CR window open time.
+   - If it is, it triggers the production job immediately.
+   - If not, it uses `waitUntil` to efficiently wait until the CR window open time without blocking Jenkins executors.
+
+3. **Triggering the Production Job:**
+   - Once the condition is met, the production job is triggered with the specified parameters.
+
+This approach ensures that the production job will only run when the CR window is open, regardless of how far in the future that time is.
