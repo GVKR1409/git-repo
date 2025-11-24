@@ -1,0 +1,122 @@
+Your code is a good foundation, but it **will not** automatically handle the "create if not exists, update if exists" behavior you're looking for. Terraform's approach is declarative - it automatically handles creation and updates based on the state file.
+
+However, there are some improvements needed for better functionality and reliability:
+
+## Updated Code with Improvements:
+
+```hcl
+resource "aws_route53_record" "this" {
+  zone_id = var.zone_id
+  name    = var.name
+  type    = var.type
+
+  # Standard record (A, AAAA, CNAME, TXT, MX, etc.)
+  ttl     = var.alias != null ? null : var.ttl
+  records = var.alias != null ? null : var.records
+
+  # Alias record (ALB, CloudFront, API Gateway, etc.)
+  dynamic "alias" {
+    for_each = var.alias != null ? [var.alias] : []
+
+    content {
+      name                   = alias.value.name
+      zone_id                = alias.value.zone_id
+      evaluate_target_health = lookup(alias.value, "evaluate_target_health", false)
+    }
+  }
+
+  # Allow record to be overwritten if it exists
+  allow_overwrite = true
+
+  # Optional: Add lifecycle rules for better control
+  lifecycle {
+    ignore_changes = [
+      # Ignore changes to allow_overwrite once set
+      allow_overwrite,
+    ]
+  }
+}
+```
+
+## Key Improvements:
+
+1. **Fixed conditional logic**: Changed `var.alias == null` to `var.alias != null` for proper handling of alias vs non-alias records
+
+2. **Added `allow_overwrite = true`**: This is crucial for your use case. It allows Terraform to manage records that might already exist in Route53, effectively giving you the "update if exists" behavior
+
+3. **Proper null handling**: Set `ttl = null` and `records = null` for alias records (required by AWS provider)
+
+## Recommended Variables:
+
+```hcl
+variable "zone_id" {
+  description = "Route53 hosted zone ID"
+  type        = string
+}
+
+variable "name" {
+  description = "DNS record name"
+  type        = string
+}
+
+variable "type" {
+  description = "DNS record type (A, AAAA, CNAME, ALIAS, etc.)"
+  type        = string
+}
+
+variable "ttl" {
+  description = "TTL for the record (ignored for alias records)"
+  type        = number
+  default     = 300
+}
+
+variable "records" {
+  description = "List of record values (ignored for alias records)"
+  type        = list(string)
+  default     = null
+}
+
+variable "alias" {
+  description = "Configuration for alias records"
+  type = object({
+    name                   = string
+    zone_id                = string
+    evaluate_target_health = optional(bool, false)
+  })
+  default = null
+}
+```
+
+## Usage Examples:
+
+**For EC2/ELB/RDS (CNAME/A records):**
+```hcl
+module "web_dns" {
+  source = "./route53-module"
+  
+  zone_id = "Z123456789"
+  name    = "web.example.com"
+  type    = "A"
+  ttl     = 300
+  records = ["192.168.1.100"]
+}
+```
+
+**For ALB/CloudFront (Alias records):**
+```hcl
+module "alb_dns" {
+  source = "./route53-module"
+  
+  zone_id = "Z123456789"
+  name    = "app.example.com"
+  type    = "A"
+  
+  alias = {
+    name                   = "alb-123456.us-east-1.elb.amazonaws.com"
+    zone_id                = "Z35SXDOTRQ7X7K" # ELB zone ID
+    evaluate_target_health = true
+  }
+}
+```
+
+This module will now properly handle both creation of new records and updates to existing records in Route53.
